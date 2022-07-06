@@ -1,5 +1,5 @@
 import json
-from flask import request, _request_ctx_stack
+from flask import request, _request_ctx_stack, abort
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
@@ -31,7 +31,22 @@ class AuthError(Exception):
     return the token part of the header
 '''
 def get_token_auth_header():
-   raise Exception('Not Implemented')
+    # check if request is an authorization request
+    if "Authorization" not in request.headers:
+        abort(401)
+    # get the request
+    auth_header = request.headers["Authorization"]
+    header_parts = auth_header.split(" ")
+    # validation
+    # check if both header and token exist in the authorization request
+    if len(header_parts) != 2:
+        abort(401)
+
+    # Check if it is a bearer request
+    elif header_parts[0].lower != "bearer":
+        abort(401)
+        
+    return header_parts[1]
 
 '''
 @TODO implement check_permissions(permission, payload) method
