@@ -30,12 +30,15 @@ CORS(app)
 '''
 @app.route('/drinks')
 def get_drinks():
-    drinks_query = Drink.query.all()
-    drinks = [drink.short() for drink in drinks_query]
-    return jsonify({
-        "success": True,
-        "drinks": drinks
-    })
+    try:
+        drinks_query = Drink.query.all()
+        drinks = [drink.short() for drink in drinks_query]
+        return jsonify({
+            "success": True,
+            "drinks": drinks
+        })
+    except Exception as e:
+        abort(e.code)
 
 '''
 @TODO implement endpoint
@@ -45,6 +48,19 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route("/drinks-detail")
+@requires_auth(permission="get:drinks-detail")
+def get_drinks_detail():
+    try:
+        drinks_query = Drink.query.all()
+        drinks = [drink.long() for drink in drinks_query]
+
+        return jsonify({
+            "success": True,
+            "drinks": drinks
+        })
+    except Exception as e:
+        abort(e.code)
 
 
 '''
