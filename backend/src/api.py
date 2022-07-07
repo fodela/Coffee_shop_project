@@ -72,7 +72,38 @@ def get_drinks_detail():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+@app.route("/drinks", methods=["POST"])
+@requires_auth(permission="get:drinks-detail")
+def post_new_drink():
+    body = request.get_json()
 
+    drink_details = {
+                "new_drink_title": body.get("title", None),
+                "new_drink_recipe": body.get("recipe", None)      
+            }
+
+    # Ensure that all details of the new drink are given
+    for detail in drink_details:
+        if not drink_details[detail]:
+            abort(400)
+    
+        else:
+            drink = Drink(
+                title= drink_details["new_drink_recipe"], 
+                recipe= drink_details["new_drink_recipe"]
+                )
+    
+    # get all drinks
+    all_drinks = get_drinks().get_json()["drinks"]
+
+    try:
+        drink.insert()
+        return jsonify({
+            "success": True,
+            "drinks": all_drinks
+        })
+    except Exception as e:
+        abort(e.code)
 
 '''
 @TODO implement endpoint
