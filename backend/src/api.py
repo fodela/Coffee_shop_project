@@ -73,13 +73,14 @@ def get_drinks_detail():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks", methods=["POST"])
-@requires_auth(permission="get:drinks-detail")
+# @requires_auth(permission="get:drinks-detail")
 def post_new_drink():
+    # get details from the request
     body = request.get_json()
 
     drink_details = {
                 "new_drink_title": body.get("title", None),
-                "new_drink_recipe": body.get("recipe", None)      
+                "new_drink_recipe": json.dumps(body.get("recipe", None))      
             }
 
     # Ensure that all details of the new drink are given
@@ -89,18 +90,17 @@ def post_new_drink():
     
         else:
             drink = Drink(
-                title= drink_details["new_drink_recipe"], 
+                title= drink_details["new_drink_title"], 
                 recipe= drink_details["new_drink_recipe"]
                 )
     
     # get all drinks
-    all_drinks = get_drinks().get_json()["drinks"]
 
     try:
         drink.insert()
         return jsonify({
             "success": True,
-            "drinks": all_drinks
+            "drinks": get_drinks().get_json()["drinks"]
         })
     except Exception as e:
         abort(e.code)
