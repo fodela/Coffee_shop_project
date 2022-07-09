@@ -50,7 +50,7 @@ def get_drinks():
 '''
 @app.route("/drinks-detail")
 @requires_auth(permission="get:drinks-detail")
-def get_drinks_detail():
+def get_drinks_detail(jwt):
     try:
         drinks_query = Drink.query.all()
         drinks = [drink.long() for drink in drinks_query]
@@ -73,8 +73,8 @@ def get_drinks_detail():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks", methods=["POST"])
-# @requires_auth(permission="get:drinks-detail")
-def post_new_drink():
+@requires_auth(permission="post:drinks")
+def post_new_drink(jwt):
     # get details from the request
     body = request.get_json()
 
