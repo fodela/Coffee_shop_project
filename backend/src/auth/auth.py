@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 AUTH0_DOMAIN = 'dev-kro3nq5t.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = ' coffee shop'
+API_AUDIENCE = 'coffee_shop'
 
 ## AuthError Exception
 '''
@@ -33,18 +33,34 @@ class AuthError(Exception):
 def get_token_auth_header():
     # check if request is an authorization request
     if "Authorization" not in request.headers:
-        abort(401)
+        raise AuthError(
+            {
+                "code": "invalid_header",
+                "description": "Authorization not in header"
+            },401
+        )
+        
     # get the request
     auth_header = request.headers["Authorization"]
     header_parts = auth_header.split(" ")
     # validation
     # check if both header and token exist in the authorization request
     if len(header_parts) != 2:
-        abort(401)
+        raise AuthError(
+            {
+                "code": "invalid_header",
+                "description": "Both bearer and token must be provided"
+            },401
+        )
 
     # Check if it is a bearer request
-    elif header_parts[0].lower != "bearer":
-        abort(401)
+    elif header_parts[0].lower() != "bearer":
+        raise AuthError(
+            {
+                "code": "invalid_header",
+                "description": "Not a bearer token. Must be a bearer token"
+            },401
+        )
 
     return header_parts[1]
 
@@ -92,7 +108,8 @@ def check_permissions(permission, payload):
 '''
 def verify_decode_jwt(token):
     # GET THE PUBLIC KEY FROM AUTH0
-    jsonurl = urlopen(f"https://{AUTH0_DOMAIN}.well-known/jwks.json")
+    jsonurl = urlopen(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
+
     jwks = json.loads(jsonurl.read())
  
     # GET THE DATA IN THE HEADER
