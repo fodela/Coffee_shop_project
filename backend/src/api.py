@@ -159,7 +159,21 @@ def update_drinks(drink_id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@requires_auth(permission="delete:drinks")
+@app.route("/drinks/<int:drink_id>", methods=["DELETE"])
+def delete_drink(drink_id):
+    # get drink to be deleted
+    drink = Drink.query.get(drink_id)
 
+    # delete the drink
+    try:
+        drink.delete()
+        return jsonify({
+                "success": True,
+                "drinks": get_drinks().get_json()["drinks"]
+            })
+    except Exception as e:
+        abort(e.code)
 
 # Error Handling
 '''
