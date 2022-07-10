@@ -116,6 +116,37 @@ def post_new_drink(jwt):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@requires_auth(permission="patch:drinks")
+@app.route("/drinks/<int:drink_id>", methods=["PATCH"])
+def update_drinks(drink_id):
+    # get the drink to be update
+    drink = Drink.query.get(drink_id)
+
+    # body of request
+    body = request.get_json()
+
+    updated_title = body.get("title", None)
+
+    updated_recipe = json.dumps(body.get("recipe", None))
+
+    # update the drink conditionally
+    if updated_title:
+        drink.title = updated_title
+
+    if updated_recipe: 
+        drink.recipe = updated_recipe
+
+    try: 
+        drink.update()
+
+        return jsonify({
+            "success": True,
+            "drinks": get_drinks().get_json()["drinks"]
+        })
+    except Exception as e:
+        abort(e.code)
+
+
 
 
 '''
@@ -173,7 +204,7 @@ def unauthorized(error):
     error handler should conform to general task above
 '''
 @app.errorhandler(401)
-def unauthorized(error):
+def unauthorized(AuthError):
     return jsonify({
         "success": False,
         "error": 401,
