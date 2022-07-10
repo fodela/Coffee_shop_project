@@ -137,6 +137,7 @@ def update_drinks(drink_id):
         drink.recipe = updated_recipe
 
     try: 
+        #update drink
         drink.update()
 
         return jsonify({
@@ -165,8 +166,8 @@ def delete_drink(drink_id):
     # get drink to be deleted
     drink = Drink.query.get(drink_id)
 
-    # delete the drink
     try:
+        # delete the drink
         drink.delete()
         return jsonify({
                 "success": True,
@@ -205,6 +206,14 @@ def unprocessable(error):
 @TODO implement error handler for 404
     error handler should conform to general task above
 '''
+@app.errorhandler(400)
+def unauthorized(error):
+    return jsonify({
+        "success": False,
+        "error": 400,
+        "message": " bad request"
+    }),400
+
 @app.errorhandler(404)
 def unauthorized(error):
     return jsonify({
