@@ -17,7 +17,7 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this function will add one
 """
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 # ROUTES
 
@@ -26,10 +26,10 @@ CORS(app)
 def get_drinks():
     try:
         drinks_query = Drink.query.all()
-        drinks = [drink.short() for drink in drinks_query]
+        drinks = [drink.long() for drink in drinks_query]
         return jsonify({"success": True, "drinks": drinks})
-    except Exception as e:
-        abort(e.code)
+    except Exception:
+        abort(500)
 
 
 @app.route("/drinks-detail")
@@ -40,7 +40,7 @@ def get_drinks_detail(jwt):
         drinks = [drink.long() for drink in drinks_query]
 
         return jsonify({"success": True, "drinks": drinks})
-    except Exception as e:
+    except Exception:
         abort(e.code)
 
 
@@ -73,15 +73,19 @@ def post_new_drink(jwt):
         return jsonify(
             {"success": True, "drinks": get_drinks().get_json()["drinks"]}
         )
-    except Exception as e:
-        abort(e.code)
+    except Exception:
+        abort(500)
 
 
-@requires_auth(permission="patch:drinks")
 @app.route("/drinks/<int:drink_id>", methods=["PATCH"])
-def update_drinks(drink_id):
-    # get the drink to be update
+@requires_auth(permission="patch:drinks")
+def update_drinks(jwt, drink_id):
+    # get the drink to be updated
     drink = Drink.query.get(drink_id)
+
+    # check if is such a drink_id exist
+    if drink is None:
+        abort(400)
 
     # body of request
     body = request.get_json()
@@ -104,13 +108,13 @@ def update_drinks(drink_id):
         return jsonify(
             {"success": True, "drinks": get_drinks().get_json()["drinks"]}
         )
-    except Exception as e:
-        abort(e.code)
+    except Exception:
+        abort(500)
 
 
-@requires_auth(permission="delete:drinks")
 @app.route("/drinks/<int:drink_id>", methods=["DELETE"])
-def delete_drink(drink_id):
+@requires_auth(permission="delete:drinks")
+def delete_drink(jwt, drink_id):
     # get drink to be deleted
     drink = Drink.query.get(drink_id)
 
@@ -120,8 +124,8 @@ def delete_drink(drink_id):
         return jsonify(
             {"success": True, "drinks": get_drinks().get_json()["drinks"]}
         )
-    except Exception as e:
-        abort(e.code)
+    except Exception:
+        abort(500)
 
 
 # Error Handling
@@ -131,7 +135,7 @@ Example error handling for unprocessable entity
 
 
 @app.errorhandler(400)
-def unauthorized(error):
+def bad_request(error):
     return (
         jsonify({"success": False, "error": 400, "message": " bad request"}),
         400,
@@ -139,7 +143,7 @@ def unauthorized(error):
 
 
 @app.errorhandler(404)
-def unauthorized(error):
+def not_found(error):
     return (
         jsonify(
             {"success": False, "error": 404, "message": "resource not found"}
@@ -153,6 +157,14 @@ def unprocessable(error):
     return (
         jsonify({"success": False, "error": 422, "message": "unprocessable"}),
         422,
+    )
+
+
+@app.errorhandler(500)
+def server_error(error):
+    return (
+        jsonify({"success": False, "error": 500, "message": "server error"}),
+        500,
     )
 
 
