@@ -28,13 +28,7 @@ class AuthError(Exception):
 def get_token_auth_header():
     # check if request is an authorization request
     if "Authorization" not in request.headers:
-        raise AuthError(
-            {
-                "code": "invalid_header",
-                "description": "Authorization not in header",
-            },
-            401,
-        )
+        abort(401)
 
     # get the request
     auth_header = request.headers["Authorization"]
@@ -42,23 +36,11 @@ def get_token_auth_header():
     # validation
     # check if both header and token exist in the authorization request
     if len(header_parts) != 2:
-        raise AuthError(
-            {
-                "code": "invalid_header",
-                "description": "Both bearer and token must be provided",
-            },
-            401,
-        )
+        abort(401)
 
     # Check if it is a bearer request
     elif header_parts[0].lower() != "bearer":
-        raise AuthError(
-            {
-                "code": "invalid_header",
-                "description": "Not a bearer token. Must be a bearer token",
-            },
-            401,
-        )
+        abort(401)
 
     return header_parts[1]
 
@@ -66,20 +48,11 @@ def get_token_auth_header():
 def check_permissions(permission, payload):
     # Payload must have permissions. | AuthError400
     if "permissions" not in payload:
-        raise AuthError(
-            {
-                "code": "invalid_claims",
-                "description": "Permission not included in JWT.",
-            },
-            400,
-        )
+        abort(401)
 
     # permission must match permission in the payload. | authError403
     if permission not in payload["permissions"]:
-        raise AuthError(
-            {"code": "unauthorized", "description": "Permission not found"},
-            403,
-        )
+        abort(403)
 
     return True
 
