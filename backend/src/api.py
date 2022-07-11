@@ -80,8 +80,12 @@ def post_new_drink(jwt):
 @requires_auth(permission="patch:drinks")
 @app.route("/drinks/<int:drink_id>", methods=["PATCH"])
 def update_drinks(drink_id):
-    # get the drink to be update
+    # get the drink to be updated
     drink = Drink.query.get(drink_id)
+
+    # check if is such a drink_id exist
+    if drink is None:
+        abort(400)
 
     # body of request
     body = request.get_json()
@@ -131,7 +135,7 @@ Example error handling for unprocessable entity
 
 
 @app.errorhandler(400)
-def unauthorized(error):
+def bad_request(error):
     return (
         jsonify({"success": False, "error": 400, "message": " bad request"}),
         400,
@@ -139,7 +143,7 @@ def unauthorized(error):
 
 
 @app.errorhandler(404)
-def unauthorized(error):
+def not_found(error):
     return (
         jsonify(
             {"success": False, "error": 404, "message": "resource not found"}
@@ -153,6 +157,14 @@ def unprocessable(error):
     return (
         jsonify({"success": False, "error": 422, "message": "unprocessable"}),
         422,
+    )
+
+
+@app.errorhandler(500)
+def server_error(error):
+    return (
+        jsonify({"success": False, "error": 500, "message": "server error"}),
+        500,
     )
 
 
