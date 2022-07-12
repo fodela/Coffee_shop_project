@@ -30,10 +30,9 @@ def get_token_auth_header():
     if "Authorization" not in request.headers:
         raise AuthError(
             {
-                "code": "invalid_header",
-                "description": "Authorization not in header",
-            },
-            401,
+                "code": "missing_authorization_header",
+                "description": "Authorization header must be provided"
+            }, 401
         )
 
     # get the request
@@ -45,9 +44,8 @@ def get_token_auth_header():
         raise AuthError(
             {
                 "code": "invalid_header",
-                "description": "Both bearer and token must be provided",
-            },
-            401,
+                "description": "authorization header must contain both bearer and token"
+            }, 401
         )
 
     # Check if it is a bearer request
@@ -55,9 +53,8 @@ def get_token_auth_header():
         raise AuthError(
             {
                 "code": "invalid_header",
-                "description": "Not a bearer token. Must be a bearer token",
-            },
-            401,
+                "description": "Authorization header must contain 'bearer'"
+            }, 401
         )
 
     return header_parts[1]
@@ -68,17 +65,18 @@ def check_permissions(permission, payload):
     if "permissions" not in payload:
         raise AuthError(
             {
-                "code": "invalid_claims",
-                "description": "Permission not included in JWT.",
-            },
-            400,
+                "code": "missing_permissions",
+                "description": "payload does not have permission"
+            }, 400
         )
 
     # permission must match permission in the payload. | authError403
     if permission not in payload["permissions"]:
         raise AuthError(
-            {"code": "unauthorized", "description": "Permission not found"},
-            403,
+            {
+                "code": "invalid_permissions",
+                "description": "permission does not match permission in payload"
+            }, 403
         )
 
     return True
