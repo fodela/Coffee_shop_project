@@ -99,7 +99,8 @@ def update_drinks(jwt, drink_id):
         drink.title = updated_title
 
     if updated_recipe:
-        drink.recipe = updated_recipe
+        drink.recipe = updated_recipe if type(
+            updated_recipe) == str else json.dumps(updated_recipe)
 
     try:
         # update drink

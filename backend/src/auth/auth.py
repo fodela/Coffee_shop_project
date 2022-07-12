@@ -1,13 +1,17 @@
 import json
+import os
 from flask import request, _request_ctx_stack, abort
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
+from dotenv import load_dotenv
 
+# look for a file named .env and load my database username and password
+load_dotenv()
 
-AUTH0_DOMAIN = "dev-kro3nq5t.us.auth0.com"
-ALGORITHMS = ["RS256"]
-API_AUDIENCE = "coffee_shop"
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
+ALGORITHMS = os.getenv("AUTH0_ALGO")
+API_AUDIENCE = os.getenv("API_AUDIENCE")
 
 # AuthError Exception
 """
