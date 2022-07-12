@@ -28,7 +28,12 @@ class AuthError(Exception):
 def get_token_auth_header():
     # check if request is an authorization request
     if "Authorization" not in request.headers:
-        abort(401)
+        raise AuthError(
+            {
+                "code": "missing_authorization_header",
+                "description": "Authorization header must be provided"
+            }, 401
+        )
 
     # get the request
     auth_header = request.headers["Authorization"]
@@ -36,11 +41,21 @@ def get_token_auth_header():
     # validation
     # check if both header and token exist in the authorization request
     if len(header_parts) != 2:
-        abort(401)
+        raise AuthError(
+            {
+                "code": "invalid_header",
+                "description": "authorization header must contain both bearer and token"
+            }, 401
+        )
 
     # Check if it is a bearer request
     elif header_parts[0].lower() != "bearer":
-        abort(401)
+        raise AuthError(
+            {
+                "code": "invalid_header",
+                "description": "Authorization header must contain 'bearer'"
+            }, 401
+        )
 
     return header_parts[1]
 
@@ -48,11 +63,21 @@ def get_token_auth_header():
 def check_permissions(permission, payload):
     # Payload must have permissions. | AuthError400
     if "permissions" not in payload:
-        abort(401)
+        raise AuthError(
+            {
+                "code": "missing_permissions",
+                "description": "payload does not have permission"
+            }, 400
+        )
 
     # permission must match permission in the payload. | authError403
     if permission not in payload["permissions"]:
-        abort(403)
+        raise AuthError(
+            {
+                "code": "invalid_permissions",
+                "description": "permission does not match permission in payload"
+            }, 403
+        )
 
     return True
 

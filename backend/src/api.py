@@ -41,7 +41,7 @@ def get_drinks_detail(jwt):
 
         return jsonify({"success": True, "drinks": drinks})
     except Exception:
-        abort(e.code)
+        abort(500)
 
 
 @app.route("/drinks", methods=["POST"])
@@ -171,17 +171,10 @@ def server_error(error):
 # Error Handling
 
 
-@app.errorhandler(401)
-def unauthorized(AuthError):
+@app.errorhandler(AuthError)
+def handle_auth_error(error):
     return (
-        jsonify({"success": False, "error": 401, "message": "unauthorized"}),
-        401,
-    )
-
-
-@app.errorhandler(403)
-def unauthorized(AuthError):
-    return (
-        jsonify({"success": False, "error": 403, "message": "forbidden"}),
-        403,
+        jsonify({"success": False, "error": error.status_code,
+                "message": error.error["description"]}),
+        error.status_code,
     )
